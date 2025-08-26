@@ -186,6 +186,42 @@ export default function App() {
     setSyncStatus('syncing')
     try {
       console.log('Force syncing...')
+      
+      // First check authentication status
+      const { data: { user } } = await supabase.auth.getUser()
+      console.log('Current user:', user)
+      
+      if (!user) {
+        console.log('No user found, attempting to sign in again...')
+        const { error } = await supabase.auth.signInWithPassword({
+          email: 'personal@localhost.app',
+          password: 'personal-use-only-2024'
+        })
+        
+        if (error) {
+          console.error('Re-authentication failed:', error)
+          setSyncStatus('idle')
+          return
+        }
+        
+        console.log('Re-authentication successful')
+      }
+      
+      // Test database connection
+      console.log('Testing database connection...')
+      const { data: testData, error: testError } = await supabase
+        .from('notes')
+        .select('count')
+        .limit(1)
+      
+      if (testError) {
+        console.error('Database connection test failed:', testError)
+        setSyncStatus('idle')
+        return
+      }
+      
+      console.log('Database connection successful')
+      
       await initSync()
       setSyncStatus('synced')
       setTimeout(() => setSyncStatus('idle'), 2000)

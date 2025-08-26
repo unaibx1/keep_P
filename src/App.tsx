@@ -4,6 +4,7 @@ import { db, Note } from '@/lib/db'
 import { ensureSyncRegistered, flushQueue, initSync, newLocalNote, queueMutation, upsertNoteLocal } from '@/lib/sync'
 import { NoteCard } from '@/components/NoteCard'
 import { NoteEditor } from '@/components/NoteEditor'
+import { AuthPage } from '@/components/AuthPage'
 
 function useDarkMode() {
   const [dark, setDark] = useState(false)
@@ -37,6 +38,8 @@ export default function App() {
   const [installEvt, setInstallEvt] = useState<any>(null)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced'>('idle')
+  const [user, setUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     db.notes.orderBy('updated_at').reverse().toArray().then(setNotes)
@@ -51,47 +54,33 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const autoSignIn = async () => {
-      try {
-        console.log('Attempting auto sign-in...')
-        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
-        console.log('Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
-        
-        const { error } = await supabase.auth.signInWithPassword({
-          email: 'personal@example.com',
-          password: 'personal-use-only-2024'
-        })
-        
-        if (error && error.message.includes('Invalid login')) {
-          console.log('Account not found, creating new account...')
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: 'personal@localhost.app',
-            password: 'personal-use-only-2024'
-          })
-          
-          if (!signUpError) {
-            console.log('Personal account created and signed in')
-          } else {
-            console.error('Sign up error:', signUpError)
-          }
-        } else if (error) {
-          console.error('Sign in error:', error)
-        } else {
-          console.log('Successfully signed in')
-        }
-        
-        console.log('Initializing sync...')
-        // Add a small delay to ensure auth is fully established
-        setTimeout(async () => {
-          await initSync()
-          ensureSyncRegistered()
-        }, 1000)
-      } catch (err) {
-        console.error('Auto sign-in error:', err)
+    // Check for existing session
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setIsLoading(false)
+      
+      if (user) {
+        console.log('User found, initializing sync...')
+        await initSync()
+        ensureSyncRegistered()
       }
     }
     
-    autoSignIn()
+    checkUser()
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        console.log('User authenticated, initializing sync...')
+        await initSync()
+        ensureSyncRegistered()
+      }
+    })
+    
+    return () => subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
@@ -183,80 +172,14 @@ export default function App() {
   }
 
   async function forceSync() {
+    if (!user) {
+      console.log('No user authenticated, cannot sync')
+      return
+    }
+    
     setSyncStatus('syncing')
     try {
       console.log('Force syncing...')
-      
-      // First check authentication status
-      const { data: { user } } = await supabase.auth.getUser()
-      console.log('Current user:', user)
-      
-      if (!user) {
-        console.log('No user found, attempting to sign in again...')
-        const { error } = await supabase.auth.signInWithPassword({
-          email: 'personal@example.com',
-          password: 'personal-use-only-2024'
-        })
-        
-        if (error && error.message.includes('Invalid login')) {
-          console.log('Account not found, creating new account...')
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: 'personal@example.com',
-            password: 'personal-use-only-2024'
-          })
-          
-          if (signUpError) {
-            console.error('Account creation failed:', signUpError)
-            setSyncStatus('idle')
-            return
-          }
-          
-          console.log('Account creation response:', signUpData)
-          
-          if (signUpData.user && !signUpData.user.email_confirmed_at) {
-            console.log('Account created but email confirmation required')
-            // For development, we can try to sign in anyway
-          }
-          
-          console.log('Account created successfully')
-          
-          // Try to sign in again after creating the account
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: 'personal@example.com',
-            password: 'personal-use-only-2024'
-          })
-          
-          if (signInError) {
-            console.error('Sign in after creation failed:', signInError)
-            setSyncStatus('idle')
-            return
-          }
-          
-          console.log('Sign in after account creation successful')
-        } else if (error) {
-          console.error('Re-authentication failed:', error)
-          setSyncStatus('idle')
-          return
-        } else {
-          console.log('Re-authentication successful')
-        }
-      }
-      
-      // Test database connection
-      console.log('Testing database connection...')
-      const { data: testData, error: testError } = await supabase
-        .from('notes')
-        .select('count')
-        .limit(1)
-      
-      if (testError) {
-        console.error('Database connection test failed:', testError)
-        setSyncStatus('idle')
-        return
-      }
-      
-      console.log('Database connection successful')
-      
       await initSync()
       setSyncStatus('synced')
       setTimeout(() => setSyncStatus('idle'), 2000)
@@ -264,6 +187,22 @@ export default function App() {
       console.error('Force sync error:', error)
       setSyncStatus('idle')
     }
+  }
+
+  const handleAuthSuccess = () => {
+    console.log('Authentication successful')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="spinner"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />
   }
 
   return (
@@ -325,7 +264,7 @@ export default function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
-              <button
+                            <button
                 className="btn-icon"
                 onClick={() => setDark(!dark)}
                 aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -339,6 +278,18 @@ export default function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
                 )}
+              </button>
+              <button
+                className="btn-icon"
+                onClick={async () => {
+                  await supabase.auth.signOut()
+                }}
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
               </button>
               {installEvt && (
                 <button className="btn-primary flex items-center gap-2" onClick={installApp}>

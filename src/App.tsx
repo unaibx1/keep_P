@@ -385,8 +385,9 @@ export default function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-3">
-        {/* Search Bar Section */}
-        <section className="mb-6">
+        {/* Search Bar Section - ALWAYS VISIBLE */}
+        <section className="mb-6 bg-red-100 dark:bg-red-900 p-4 rounded-lg">
+          <h3 className="text-lg font-bold mb-2 text-center">SEARCH BAR TEST</h3>
           <div className="relative max-w-md mx-auto">
             {searchQuery && (
               <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">

@@ -199,5 +199,3 @@ export const NoteCard = memo(function NoteCard({
     </>
   )
 })
-
-export { NoteCard }

@@ -124,16 +124,16 @@ export default function App() {
 
   async function createNote() {
     const n = newLocalNote();
-    if (n.title || n.body) { // Check if the note is not empty
-      await upsertNoteLocal(n);
-      setEditing(n);
-    }
+    setEditing(n);
   }
 
   async function saveNote(n: Note) {
-    await upsertNoteLocal(n)
-    await queueMutation({ type: 'upsert', noteId: n.id, ts: Date.now(), payload: { title: n.title, body: n.body } })
-    await flushQueue()
+    // Only save if the note has content
+    if (n.title.trim() || n.body.trim()) {
+      await upsertNoteLocal(n)
+      await queueMutation({ type: 'upsert', noteId: n.id, ts: Date.now(), payload: { title: n.title, body: n.body } })
+      await flushQueue()
+    }
     setEditing(null)
   }
 
@@ -179,7 +179,7 @@ export default function App() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gradient">PWA App</h1>
+                <h1 className="text-2xl font-bold">PWA App</h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">Your personal AI prompt organizer</p>
               </div>
             </div>
@@ -244,8 +244,8 @@ export default function App() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <section className="flex items-center justify-between mb-8">
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        <section className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             {/* Removed the button and total notes count */}
           </div>

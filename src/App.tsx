@@ -58,7 +58,7 @@ export default function App() {
         console.log('Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
         
         const { error } = await supabase.auth.signInWithPassword({
-          email: 'personal@localhost.app',
+          email: 'personal@example.com',
           password: 'personal-use-only-2024'
         })
         
@@ -194,14 +194,14 @@ export default function App() {
       if (!user) {
         console.log('No user found, attempting to sign in again...')
         const { error } = await supabase.auth.signInWithPassword({
-          email: 'personal@localhost.app',
+          email: 'personal@example.com',
           password: 'personal-use-only-2024'
         })
         
         if (error && error.message.includes('Invalid login')) {
           console.log('Account not found, creating new account...')
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: 'personal@localhost.app',
+            email: 'personal@example.com',
             password: 'personal-use-only-2024'
           })
           
@@ -222,7 +222,7 @@ export default function App() {
           
           // Try to sign in again after creating the account
           const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: 'personal@localhost.app',
+            email: 'personal@example.com',
             password: 'personal-use-only-2024'
           })
           

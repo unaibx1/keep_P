@@ -53,12 +53,14 @@ export default function App() {
   useEffect(() => {
     const autoSignIn = async () => {
       try {
+        console.log('Attempting auto sign-in...')
         const { error } = await supabase.auth.signInWithPassword({
           email: 'personal@localhost.app',
           password: 'personal-use-only-2024'
         })
         
         if (error && error.message.includes('Invalid login')) {
+          console.log('Account not found, creating new account...')
           const { error: signUpError } = await supabase.auth.signUp({
             email: 'personal@localhost.app',
             password: 'personal-use-only-2024'
@@ -66,10 +68,17 @@ export default function App() {
           
           if (!signUpError) {
             console.log('Personal account created and signed in')
+          } else {
+            console.error('Sign up error:', signUpError)
           }
+        } else if (error) {
+          console.error('Sign in error:', error)
+        } else {
+          console.log('Successfully signed in')
         }
         
-        initSync()
+        console.log('Initializing sync...')
+        await initSync()
         ensureSyncRegistered()
       } catch (err) {
         console.error('Auto sign-in error:', err)
@@ -167,6 +176,19 @@ export default function App() {
     }
   }
 
+  async function forceSync() {
+    setSyncStatus('syncing')
+    try {
+      console.log('Force syncing...')
+      await initSync()
+      setSyncStatus('synced')
+      setTimeout(() => setSyncStatus('idle'), 2000)
+    } catch (error) {
+      console.error('Force sync error:', error)
+      setSyncStatus('idle')
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <header className="header-bar">
@@ -216,6 +238,16 @@ export default function App() {
                 )}
               </div>
               
+              <button
+                className="btn-icon"
+                onClick={forceSync}
+                aria-label="Force sync"
+                title="Force sync"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
               <button
                 className="btn-icon"
                 onClick={() => setDark(!dark)}

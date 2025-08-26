@@ -69,9 +69,19 @@ export async function flushQueue() {
 
 export async function pullRemote() {
   const user_id = await getUserId()
-  if (!user_id) return // require login to sync
+  if (!user_id) {
+    console.log('No user_id found, skipping pullRemote')
+    return // require login to sync
+  }
+  
+  console.log('Pulling remote notes for user:', user_id)
   const { data, error } = await supabase.from('notes').select('*').order('updated_at', { ascending: false })
-  if (error) throw error
+  if (error) {
+    console.error('Error pulling remote notes:', error)
+    throw error
+  }
+  
+  console.log('Remote notes found:', data.length)
   // Merge
   for (const r of data) {
     const existing = await db.notes.where('remote_id').equals(r.id).first()
@@ -88,6 +98,7 @@ export async function pullRemote() {
         dirty: false,
         deleted: false
       })
+      console.log('Synced remote note:', r.title || 'Untitled')
     }
   }
 }

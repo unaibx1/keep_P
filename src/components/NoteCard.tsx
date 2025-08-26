@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, memo } from 'react'
 import { Note } from '@/lib/db'
 
-export function NoteCard({
+export const NoteCard = memo(function NoteCard({
   note,
   onCopy,
   onEdit,

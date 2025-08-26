@@ -40,6 +40,7 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced'>('idle')
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     // Load notes immediately
@@ -50,7 +51,7 @@ export default function App() {
     const interval = setInterval(async () => {
       const all = await db.notes.orderBy('updated_at').reverse().toArray()
       setNotes(all.filter(n => !n.deleted))
-    }, 1000) // Reduced from 500ms to 1000ms for better performance
+    }, 2000) // Further reduced for better performance
     
     return () => {
       clearInterval(interval);
@@ -232,6 +233,37 @@ export default function App() {
     console.log('Authentication successful')
   }
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        const searchInput = document.querySelector('input[placeholder="Search notes..."]') as HTMLInputElement
+        if (searchInput) {
+          searchInput.focus()
+        }
+      }
+      // Escape to clear search
+      if (e.key === 'Escape' && searchQuery) {
+        setSearchQuery('')
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [searchQuery])
+
+  // Filter notes based on search query for better performance
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return notes
+    const query = searchQuery.toLowerCase().trim()
+    return notes.filter(note => 
+      note.title?.toLowerCase().includes(query) || 
+      note.body?.toLowerCase().includes(query)
+    )
+  }, [notes, searchQuery])
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -354,21 +386,55 @@ export default function App() {
 
       <div className="max-w-7xl mx-auto px-4 py-3">
         <section className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            {/* Removed the button and total notes count */}
+          <div className="flex items-center gap-3 flex-1">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              {searchQuery && (
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                  {filteredNotes.length} of {notes.length} notes
+                </div>
+              )}
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search notes... (Ctrl+K)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <svg className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </section>
 
-        {notes.length === 0 ? (
+        {filteredNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
               <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">No notes yet</h3>
+            <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              {searchQuery ? 'No notes found' : 'No notes yet'}
+            </h3>
             <p className="text-slate-500 dark:text-slate-400 text-center max-w-md mb-6">
-              Start organizing your AI prompts and ideas. Create your first note to get started!
+              {searchQuery 
+                ? `No notes found matching "${searchQuery}". Try a different search term.`
+                : 'Start organizing your AI prompts and ideas. Create your first note to get started!'
+              }
             </p>
             <button className="btn-primary flex items-center gap-2" onClick={createNote}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,14 +445,14 @@ export default function App() {
           </div>
         ) : (
           <section className="note-grid">
-            {notes.map(n => (
+            {filteredNotes.map(n => (
               <NoteCard
                 key={n.id}
                 note={n}
                 onCopy={copyBody}
                 onEdit={setEditing}
                 onDelete={deleteNote}
-                isOnline={isOnline} // Ensure this line is present only once
+                isOnline={isOnline}
               />
             ))}
           </section>

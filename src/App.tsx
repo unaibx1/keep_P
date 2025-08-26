@@ -385,15 +385,15 @@ export default function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-3">
-        <section className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3 flex-1">
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              {searchQuery && (
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                  {filteredNotes.length} of {notes.length} notes
-                </div>
-              )}
+        {/* Search Bar Section */}
+        <section className="mb-6">
+          <div className="relative max-w-md mx-auto">
+            {searchQuery && (
+              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">
+                {filteredNotes.length} of {notes.length} notes
+              </div>
+            )}
+            <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -404,7 +404,7 @@ export default function App() {
                 placeholder="Search notes... (Ctrl+K)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full pl-10 pr-10 py-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
               />
               {searchQuery && (
                 <button

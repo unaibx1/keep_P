@@ -198,13 +198,48 @@ export default function App() {
           password: 'personal-use-only-2024'
         })
         
-        if (error) {
+        if (error && error.message.includes('Invalid login')) {
+          console.log('Account not found, creating new account...')
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: 'personal@localhost.app',
+            password: 'personal-use-only-2024'
+          })
+          
+          if (signUpError) {
+            console.error('Account creation failed:', signUpError)
+            setSyncStatus('idle')
+            return
+          }
+          
+          console.log('Account creation response:', signUpData)
+          
+          if (signUpData.user && !signUpData.user.email_confirmed_at) {
+            console.log('Account created but email confirmation required')
+            // For development, we can try to sign in anyway
+          }
+          
+          console.log('Account created successfully')
+          
+          // Try to sign in again after creating the account
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: 'personal@localhost.app',
+            password: 'personal-use-only-2024'
+          })
+          
+          if (signInError) {
+            console.error('Sign in after creation failed:', signInError)
+            setSyncStatus('idle')
+            return
+          }
+          
+          console.log('Sign in after account creation successful')
+        } else if (error) {
           console.error('Re-authentication failed:', error)
           setSyncStatus('idle')
           return
+        } else {
+          console.log('Re-authentication successful')
         }
-        
-        console.log('Re-authentication successful')
       }
       
       // Test database connection

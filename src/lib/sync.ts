@@ -7,6 +7,10 @@ function isoNow() {
 
 export async function getUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getUser()
+  console.log('getUserId called, user data:', data.user ? 'User found' : 'No user')
+  if (data.user) {
+    console.log('User ID:', data.user.id)
+  }
   return data.user?.id ?? null
 }
 

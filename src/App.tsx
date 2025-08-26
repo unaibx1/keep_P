@@ -54,6 +54,9 @@ export default function App() {
     const autoSignIn = async () => {
       try {
         console.log('Attempting auto sign-in...')
+        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
+        console.log('Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
+        
         const { error } = await supabase.auth.signInWithPassword({
           email: 'personal@localhost.app',
           password: 'personal-use-only-2024'
@@ -78,8 +81,11 @@ export default function App() {
         }
         
         console.log('Initializing sync...')
-        await initSync()
-        ensureSyncRegistered()
+        // Add a small delay to ensure auth is fully established
+        setTimeout(async () => {
+          await initSync()
+          ensureSyncRegistered()
+        }, 1000)
       } catch (err) {
         console.error('Auto sign-in error:', err)
       }

@@ -56,27 +56,56 @@ export default function App() {
   useEffect(() => {
     // Check for existing session
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setIsLoading(false)
-      
-      if (user) {
-        console.log('User found, initializing sync...')
-        await initSync()
-        ensureSyncRegistered()
+      try {
+        console.log('Checking for existing session...')
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error) {
+          console.error('Error checking user:', error)
+        }
+        
+        console.log('User check result:', user ? 'User found' : 'No user')
+        setUser(user)
+        
+        if (user) {
+          console.log('User found, initializing sync...')
+          try {
+            await initSync()
+            ensureSyncRegistered()
+          } catch (syncError) {
+            console.error('Sync initialization error:', syncError)
+          }
+        }
+      } catch (error) {
+        console.error('Error in checkUser:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
     
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('Loading timeout reached, stopping loading state')
+      setIsLoading(false)
+    }, 5000) // 5 second timeout
+    
     checkUser()
+    
+    return () => clearTimeout(timeoutId)
     
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user ? 'User present' : 'No user')
       setUser(session?.user ?? null)
       
       if (session?.user) {
         console.log('User authenticated, initializing sync...')
-        await initSync()
-        ensureSyncRegistered()
+        try {
+          await initSync()
+          ensureSyncRegistered()
+        } catch (syncError) {
+          console.error('Sync initialization error:', syncError)
+        }
       }
     })
     
@@ -196,7 +225,10 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="spinner"></div>
+        <div className="text-center">
+          <div className="spinner mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading...</p>
+        </div>
       </div>
     )
   }

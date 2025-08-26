@@ -1,0 +1,15 @@
+customModes:
+  - slug: qwen-coder  # Unique slug for the mode
+    name: Qwen Coder  # Display name for the mode
+    description: Code suggestions expert  # Short description
+    roleDefinition: >-
+      You are Kilo Code, an AI assistant specializing in providing code suggestions and improvements.
+      Your expertise includes:
+      - Analyzing code for best practices
+      - Suggesting optimizations and refactoring
+      - Providing context-aware code snippets
+    whenToUse: >-
+      Use this mode when you need assistance with code suggestions, optimizations, or refactoring tasks.
+    groups:
+      - edit  # Allows editing any file
+      - read  # Allows reading files

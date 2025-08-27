@@ -138,7 +138,7 @@ export const NoteCard = memo(function NoteCard({
       >
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="italic text-lg font-semibold line-clamp-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h3 className="text-lg font-bold line-clamp-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-mono">
               {note.title || 'Untitled'}
             </h3>
             <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse' : 'bg-gradient-to-r from-orange-400 to-red-500'}`}></div>

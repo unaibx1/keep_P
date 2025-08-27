@@ -255,12 +255,11 @@ export default function App() {
   }, [searchQuery])
 
   // Filter notes based on search query for better performance
-  const filteredNotes = useMemo(() => {
+    const filteredNotes = useMemo(() => {
     if (!searchQuery.trim()) return notes
     const query = searchQuery.toLowerCase().trim()
-    return notes.filter(note => 
-      note.title?.toLowerCase().includes(query) || 
-      note.body?.toLowerCase().includes(query)
+    return notes.filter(note =>
+      note.title?.toLowerCase().includes(query)
     )
   }, [notes, searchQuery])
 
@@ -399,13 +398,13 @@ export default function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <input
-                type="text"
-                placeholder="Search notes... (Ctrl+K)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-10 py-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center transition-all duration-200 hover:shadow-md focus:shadow-lg"
-              />
+                              <input
+                  type="text"
+                  placeholder="Search note titles... (Ctrl+K)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-10 pr-10 py-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}

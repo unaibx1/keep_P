@@ -1,10 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { db, Note } from '@/lib/db'
 import { ensureSyncRegistered, flushQueue, initSync, newLocalNote, queueMutation, upsertNoteLocal } from '@/lib/sync'
 import { NoteCard } from '@/components/NoteCard'
 import { NoteEditor } from '@/components/NoteEditor'
 import { AuthPage } from '@/components/AuthPage'
+
+// Polyfill for requestIdleCallback
+const requestIdleCallback = window.requestIdleCallback || ((cb: Function) => setTimeout(cb, 1))
 
 function useDarkMode() {
   const [dark, setDark] = useState(false)
@@ -43,46 +46,46 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    // Load notes immediately
-    db.notes.orderBy('updated_at').reverse().toArray().then(setNotes)
-    db.notes.hook('creating', function () {}) // dummy to keep Dexie imported
+    // Load notes immediately with better performance
+    const loadNotes = async () => {
+      try {
+        const all = await db.notes.orderBy('updated_at').reverse().toArray()
+        setNotes(all.filter(n => !n.deleted))
+      } catch (error) {
+        console.error('Error loading notes:', error)
+      }
+    }
     
-    // Update notes less frequently for better performance
-    const interval = setInterval(async () => {
-      const all = await db.notes.orderBy('updated_at').reverse().toArray()
-      setNotes(all.filter(n => !n.deleted))
-    }, 2000) // Further reduced for better performance
+    loadNotes()
+    
+    // Use a more efficient update strategy - only update when needed
+    const unsubscribe = db.notes.hook('creating', loadNotes)
+    db.notes.hook('updating', loadNotes)
+    db.notes.hook('deleting', loadNotes)
     
     return () => {
-      clearInterval(interval);
+      unsubscribe()
     }
   }, [])
 
   useEffect(() => {
-    // Check for existing session
+    // Optimized user session check
     const checkUser = async () => {
       try {
-        console.log('Checking for existing session...')
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
           console.error('Error checking user:', error)
         }
         
-        console.log('User check result:', user ? 'User found' : 'No user')
         setUser(user)
         
         if (user) {
-          console.log('User found, initializing sync...')
-          // Initialize sync in background to avoid blocking the UI
-          setTimeout(async () => {
-            try {
-              await initSync()
-              ensureSyncRegistered()
-            } catch (syncError) {
-              console.error('Sync initialization error:', syncError)
-            }
-          }, 100)
+          // Initialize sync in background with lower priority
+          requestIdleCallback(() => {
+            initSync().catch(console.error)
+            ensureSyncRegistered()
+          })
         }
       } catch (error) {
         console.error('Error in checkUser:', error)
@@ -91,32 +94,25 @@ export default function App() {
       }
     }
     
-    // Add a faster timeout for mobile devices
+    // Faster timeout for better UX
     const timeoutId = setTimeout(() => {
-      console.log('Loading timeout reached, stopping loading state')
       setIsLoading(false)
-    }, 2000) // 2 second timeout for faster mobile experience
+    }, 1500) // Reduced timeout for faster loading
     
     checkUser()
     
     return () => clearTimeout(timeoutId)
     
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user ? 'User present' : 'No user')
+    // Optimized auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       
       if (session?.user) {
-        console.log('User authenticated, initializing sync...')
-        // Initialize sync in background to avoid blocking the UI
-        setTimeout(async () => {
-          try {
-            await initSync()
-            ensureSyncRegistered()
-          } catch (syncError) {
-            console.error('Sync initialization error:', syncError)
-          }
-        }, 100)
+        // Use requestIdleCallback for non-critical sync initialization
+        requestIdleCallback(() => {
+          initSync().catch(console.error)
+          ensureSyncRegistered()
+        })
       }
     })
     
@@ -254,14 +250,26 @@ export default function App() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [searchQuery])
 
-  // Filter notes based on search query for better performance
-    const filteredNotes = useMemo(() => {
-    if (!searchQuery.trim()) return notes
-    const query = searchQuery.toLowerCase().trim()
+  // Debounced search for better performance
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 150) // 150ms debounce delay
+    
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Optimized filtered notes with memoization
+  const filteredNotes = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return notes
+    const query = debouncedSearchQuery.toLowerCase().trim()
     return notes.filter(note =>
-      note.title?.toLowerCase().includes(query)
+      note.title?.toLowerCase().includes(query) ||
+      note.body?.toLowerCase().includes(query)
     )
-  }, [notes, searchQuery])
+  }, [notes, debouncedSearchQuery])
 
   if (isLoading) {
     return (

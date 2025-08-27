@@ -7,14 +7,15 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Basic offline-install caching for shell
-const SHELL_CACHE = 'app-shell-v1';
+// Optimized offline-install caching for shell
+const SHELL_CACHE = 'app-shell-v2';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/favicon.ico',
 ];
 
 self.addEventListener('install', (event) => {

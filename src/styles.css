@@ -11,6 +11,16 @@
     @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen;
   }
   
+  /* Performance optimizations */
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Optimize animations for performance */
+  .transform, .transition-all, .hover\:scale-\[1\.02\], .hover\:scale-105, .hover\:scale-110 {
+    will-change: transform;
+  }
+  
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;

@@ -127,7 +127,7 @@ export const NoteCard = memo(function NoteCard({
     <>
       <div 
         ref={cardRef}
-        className="card group cursor-pointer select-none"
+        className="group cursor-pointer select-none bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 hover:border-blue-300/50 dark:hover:border-blue-600/50"
         onClick={handleClick}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -137,20 +137,20 @@ export const NoteCard = memo(function NoteCard({
         onContextMenu={handleContextMenu}
       >
         <div className="flex flex-col h-full">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="italic text-base line-clamp-1 text-blue-800 dark:text-blue-100">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="italic text-lg font-semibold line-clamp-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {note.title || 'Untitled'}
             </h3>
-            <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+            <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse' : 'bg-gradient-to-r from-orange-400 to-red-500'}`}></div>
           </div>
           
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 flex-grow overflow-hidden">
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 flex-grow overflow-hidden leading-relaxed">
             <span className="line-clamp-4">
               {note.body || 'No content yet...'}
             </span>
           </p>
           
-          <div className="text-xs text-slate-400 dark:text-slate-500 mt-auto pt-2 border-t border-slate-100 dark:border-slate-700/50">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-auto pt-3 border-t border-slate-200/50 dark:border-slate-700/50 font-medium">
             {formatDate(note.updated_at)}
           </div>
         </div>
@@ -160,7 +160,7 @@ export const NoteCard = memo(function NoteCard({
       {showContextMenu && (
         <div 
           data-context-menu
-          className="fixed z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1 min-w-[120px]"
+          className="fixed z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-2xl py-2 min-w-[140px]"
           style={{
             left: `${contextMenuPosition.x}px`,
             top: `${contextMenuPosition.y}px`,
@@ -169,20 +169,20 @@ export const NoteCard = memo(function NoteCard({
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
+            className="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-3 transition-colors duration-200"
             onClick={(e) => {
               e.stopPropagation()
               onEdit(note)
               closeContextMenu()
             }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             Edit
           </button>
           <button
-            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+            className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors duration-200"
             onClick={(e) => {
               e.stopPropagation()
               onDelete(note)

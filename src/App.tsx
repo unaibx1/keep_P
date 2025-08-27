@@ -285,18 +285,26 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="header-bar">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full animate-pulse"></div>
               </div>
-              <div>
-                Prompt Man
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Prompt Man
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  Your AI companion
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -382,32 +390,32 @@ export default function App() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-3">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Search Bar Section */}
-        <section className="mb-6">
-          <div className="relative max-w-md mx-auto">
+        <section className="mb-8">
+          <div className="relative max-w-lg mx-auto">
             {searchQuery && (
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">
-                {filteredNotes.length} of {notes.length} notes
+              <div className="text-sm text-slate-600 dark:text-slate-300 mb-3 text-center font-medium">
+                Found {filteredNotes.length} of {notes.length} notes
               </div>
             )}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-                              <input
-                  type="text"
-                  placeholder="Search note titles... (Ctrl+K)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center transition-all duration-200 hover:shadow-md focus:shadow-lg"
-                />
+              <input
+                type="text"
+                placeholder="Search your prompts... (Ctrl+K)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-12 pr-12 py-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 text-center transition-all duration-300 hover:shadow-lg focus:shadow-xl hover:scale-[1.02]"
+              />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-r-lg transition-colors duration-200"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-r-2xl transition-colors duration-200"
                 >
                   <svg className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -419,26 +427,29 @@ export default function App() {
         </section>
 
         {filteredNotes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-              <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="relative mb-8">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center shadow-lg">
+                <svg className="w-16 h-16 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full animate-bounce"></div>
             </div>
-            <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
-              {searchQuery ? 'No notes found' : 'No notes yet'}
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-3">
+              {searchQuery ? 'No prompts found' : 'Ready to create magic?'}
             </h3>
-            <p className="text-slate-500 dark:text-slate-400 text-center max-w-md mb-6">
+            <p className="text-slate-600 dark:text-slate-400 text-center max-w-md mb-8 leading-relaxed">
               {searchQuery 
-                ? `No notes found matching "${searchQuery}". Try a different search term.`
-                : 'Start organizing your AI prompts and ideas. Create your first note to get started!'
+                ? `No prompts found matching "${searchQuery}". Try a different search term or create something new!`
+                : 'Start organizing your AI prompts and ideas. Your first prompt is just a click away! ✨'
               }
             </p>
-            <button className="btn-primary flex items-center gap-2" onClick={createNote}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3" onClick={createNote}>
+              <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span>Create Your First Note</span>
+              <span>Create Your First Prompt</span>
             </button>
           </div>
         ) : (
@@ -465,8 +476,8 @@ export default function App() {
         />
       )}
 
-      <button className="fab" onClick={createNote} aria-label="Create new note">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button className="group fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center z-50" onClick={createNote} aria-label="Create new prompt">
+        <svg className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
       </button>

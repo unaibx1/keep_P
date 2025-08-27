@@ -385,9 +385,8 @@ export default function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-3">
-        {/* Search Bar Section - ALWAYS VISIBLE */}
-        <section className="mb-6 bg-red-100 dark:bg-red-900 p-4 rounded-lg">
-          <h3 className="text-lg font-bold mb-2 text-center">SEARCH BAR TEST</h3>
+        {/* Search Bar Section */}
+        <section className="mb-6">
           <div className="relative max-w-md mx-auto">
             {searchQuery && (
               <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">
@@ -405,12 +404,12 @@ export default function App() {
                 placeholder="Search notes... (Ctrl+K)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-10 py-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                className="block w-full pl-10 pr-10 py-3 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center transition-all duration-200 hover:shadow-md focus:shadow-lg"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-r-lg transition-colors duration-200"
                 >
                   <svg className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -296,8 +296,7 @@ export default function App() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold">PWA App</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Your personal AI prompt organizer</p>
+                Prompt Man
               </div>
             </div>
             <div className="flex items-center gap-3">

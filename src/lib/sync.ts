@@ -118,7 +118,8 @@ export async function flushQueue() {
             if (rid) {
               const { error } = await supabase.from('notes').delete().eq('id', rid)
               if (!error) {
-                await db.notes.delete(note.id)
+                // Mark as deleted instead of permanently deleting
+                await db.updateNote({ ...note, dirty: false })
               }
             }
           } else {
@@ -140,7 +141,8 @@ export async function flushQueue() {
             const { error } = await supabase.from('notes').delete().eq('id', note.remote_id)
             if (error) throw error
           }
-          await db.notes.delete(m.noteId)
+          // Mark as deleted instead of permanently deleting
+          await db.updateNote({ ...note, deleted: true, dirty: false })
         }
         await db.mutations.delete(m.id!)
       } catch (e) {

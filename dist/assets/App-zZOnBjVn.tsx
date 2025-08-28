@@ -59,14 +59,12 @@ export default function App() {
     loadNotes()
     
     // Use a more efficient update strategy - only update when needed
-    const unsubscribeCreate = db.notes.hook('creating', loadNotes)
-    const unsubscribeUpdate = db.notes.hook('updating', loadNotes)
-    const unsubscribeDelete = db.notes.hook('deleting', loadNotes)
+    const unsubscribe = db.notes.hook('creating', loadNotes)
+    db.notes.hook('updating', loadNotes)
+    db.notes.hook('deleting', loadNotes)
     
     return () => {
-      unsubscribeCreate()
-      unsubscribeUpdate()
-      unsubscribeDelete()
+      unsubscribe()
     }
   }, [])
 
@@ -180,19 +178,9 @@ export default function App() {
   }
 
   async function deleteNote(n: Note) {
-    try {
-      const updatedNote = { ...n, deleted: true, dirty: true, updated_at: new Date().toISOString() }
-      await db.notes.put(updatedNote)
-      await queueMutation({ type: 'delete', noteId: n.id, ts: Date.now() })
-      
-      // Update the local state immediately for better UX
-      setNotes(prevNotes => prevNotes.filter(note => note.id !== n.id))
-      
-      // Don't force flush immediately - let it sync naturally
-      // await flushQueue()
-    } catch (error) {
-      console.error('Error deleting note:', error)
-    }
+    await db.notes.put({ ...n, deleted: true, dirty: true, updated_at: new Date().toISOString() })
+    await queueMutation({ type: 'delete', noteId: n.id, ts: Date.now() })
+    await flushQueue()
   }
 
   async function copyBody(n: Note) {

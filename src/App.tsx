@@ -58,7 +58,7 @@ export default function App() {
     
     loadNotes()
     
-    // Listen for real-time updates from other devices
+    // Listen for real-time updates from other devices only
     const handleNotesUpdated = () => {
       console.log('Notes updated from real-time sync, reloading...')
       loadNotes()
@@ -66,12 +66,11 @@ export default function App() {
     
     window.addEventListener('notes-updated', handleNotesUpdated)
     
-    // Set up periodic refresh for local changes
-    const refreshInterval = setInterval(loadNotes, 2000) // Refresh every 2 seconds
+    // Remove periodic refresh to prevent duplicate creation
+    // Real-time sync will handle updates from other devices
     
     return () => {
       window.removeEventListener('notes-updated', handleNotesUpdated)
-      clearInterval(refreshInterval)
     }
   }, [])
 
@@ -94,7 +93,7 @@ export default function App() {
             ensureSyncRegistered()
           })
           
-          // Set up periodic sync every 30 seconds for reliability
+          // Set up periodic sync every 60 seconds for reliability (reduced frequency)
           const periodicSync = setInterval(async () => {
             if (navigator.onLine) {
               const stats = await getSyncStats()
@@ -102,7 +101,7 @@ export default function App() {
                 performSync().catch(console.error)
               }
             }
-          }, 30000)
+          }, 60000)
           
           return () => clearInterval(periodicSync)
         }
@@ -116,7 +115,7 @@ export default function App() {
     // Faster timeout for better UX
     const timeoutId = setTimeout(() => {
       setIsLoading(false)
-    }, 1500) // Reduced timeout for faster loading
+    }, 1000) // Further reduced timeout for faster loading
     
     checkUser()
     
@@ -182,16 +181,27 @@ export default function App() {
   }
 
   async function createNote() {
+    // Prevent duplicate creation by checking if already editing
+    if (editing) return;
+    
     const n = newLocalNote();
     setEditing(n);
   }
 
   async function saveNote(n: Note) {
+    // Prevent duplicate saves
+    if (!n || !n.id) return;
+    
     // Only save if the note has content
     if (n.title.trim() || n.body.trim()) {
-      await upsertNoteLocal(n)
-      await queueMutation({ type: 'upsert', noteId: n.id, ts: Date.now(), payload: { title: n.title, body: n.body } })
-      await flushQueue()
+      try {
+        await upsertNoteLocal(n)
+        await queueMutation({ type: 'upsert', noteId: n.id, ts: Date.now(), payload: { title: n.title, body: n.body } })
+        // Don't force flush immediately - let it sync naturally
+        // await flushQueue()
+      } catch (error) {
+        console.error('Error saving note:', error)
+      }
     }
     setEditing(null)
   }

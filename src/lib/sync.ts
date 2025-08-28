@@ -47,11 +47,26 @@ export async function upsertNoteLocal(note: Note) {
 }
 
 export async function queueMutation(m: Mutation) {
+  // Check if mutation already exists to prevent duplicates
+  const existing = await db.mutations
+    .where('noteId')
+    .equals(m.noteId)
+    .where('type')
+    .equals(m.type)
+    .where('ts')
+    .above(Date.now() - 5000) // Within last 5 seconds
+    .first();
+    
+  if (existing) {
+    console.log('Duplicate mutation prevented:', m);
+    return;
+  }
+  
   await db.mutations.add(m)
   
-  // Trigger sync immediately for better responsiveness
+  // Trigger sync with delay to batch multiple mutations
   if (!isSyncing) {
-    scheduleSync();
+    setTimeout(() => scheduleSync(), 1000);
   }
 }
 
@@ -265,6 +280,13 @@ export async function setupRealtimeSubscription() {
 async function handleRemoteInsert(newNote: any) {
   const existing = await db.notes.where('remote_id').equals(newNote.id).first();
   if (!existing) {
+    // Also check by local ID to prevent duplicates
+    const existingByLocal = await db.notes.where('id').equals(newNote.id).first();
+    if (existingByLocal) {
+      console.log('Note already exists locally, skipping remote insert');
+      return;
+    }
+    
     const note: Note = {
       id: crypto.randomUUID(),
       remote_id: newNote.id,

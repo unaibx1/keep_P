@@ -70,12 +70,23 @@ export class AppDB extends Dexie {
     return note;
   }
 
-  // Optimized note updates with cache invalidation
+  // Optimized note updates with cache invalidation and duplicate prevention
   async updateNote(note: Note): Promise<void> {
+    // Check if note already exists with same content to prevent unnecessary updates
+    const existing = await this.notes.get(note.id);
+    if (existing && 
+        existing.title === note.title && 
+        existing.body === note.body && 
+        existing.updated_at === note.updated_at) {
+      return; // No changes, skip update
+    }
+    
     await this.notes.put(note);
     // Invalidate cache
     noteCache.delete(note.id);
   }
+
+
 
   // Batch operations for better performance
   async batchUpdateNotes(notes: Note[]): Promise<void> {

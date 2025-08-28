@@ -312,12 +312,28 @@ export default function App() {
           <div className="spinner mb-4"></div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Loading App</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">Getting your notes ready...</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-          >
-            Reload if stuck
-          </button>
+          <div className="space-y-2 mt-4">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+            >
+              Reload if stuck
+            </button>
+            <button 
+              onClick={() => {
+                // Clear all caches and reload
+                if ('caches' in window) {
+                  caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                  });
+                }
+                window.location.reload();
+              }} 
+              className="block px-4 py-2 text-sm bg-red-200 dark:bg-red-700 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-300 dark:hover:bg-red-600 transition-colors"
+            >
+              Clear Cache & Reload
+            </button>
+          </div>
         </div>
       </div>
     )

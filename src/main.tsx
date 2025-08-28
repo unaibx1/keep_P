@@ -36,3 +36,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </React.StrictMode>,
 )
+
+// Dispatch app ready event when React app is mounted
+window.dispatchEvent(new CustomEvent('app-ready'));

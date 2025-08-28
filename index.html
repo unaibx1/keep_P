@@ -28,18 +28,6 @@
     <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     
-    <!-- Preload critical resources -->
-    <link rel="preload" href="/src/main.tsx" as="script" type="module" />
-    <link rel="preload" href="/src/App.tsx" as="script" type="module" />
-    <link rel="preload" href="/src/styles.css" as="style" />
-    
-    <!-- Preload critical images -->
-    <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
-    <link rel="preload" href="/icons/icon-192.png" as="image" type="image/png" />
-    
-    <!-- Resource hints for faster loading -->
-    <link rel="prefetch" href="/manifest.webmanifest" />
-    
     <!-- Service Worker registration -->
     <script>
       // Register service worker with better error handling
@@ -92,6 +80,27 @@
           `;
         }
       });
+      
+      // Handle page visibility changes (mobile swipe-up, tab switching)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          console.log('Page became visible, checking for updates...');
+          // Trigger a check for updates when page becomes visible
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATES' });
+          }
+        }
+      });
+      
+      // Handle beforeunload to prevent data loss
+      window.addEventListener('beforeunload', (event) => {
+        // Only show warning if there are unsaved changes
+        const hasUnsavedChanges = sessionStorage.getItem('hasUnsavedChanges');
+        if (hasUnsavedChanges === 'true') {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
     </script>
     
     <title>PWA Prompt Manager</title>
@@ -110,21 +119,51 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+      
+      /* Prevent pull-to-refresh on mobile */
+      body {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Prevent zoom on double tap */
+      * {
+        touch-action: manipulation;
+      }
     </style>
     
     <div id="root"></div>
     
     <!-- Hide loading indicator when app is ready -->
     <script>
+      let appLoaded = false;
+      let loadTimeout;
+      
       window.addEventListener('load', () => {
-        setTimeout(() => {
-          const loading = document.getElementById('loading');
-          if (loading) {
-            loading.style.opacity = '0';
-            loading.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => loading.remove(), 300);
+        // Set a timeout to hide loading indicator
+        loadTimeout = setTimeout(() => {
+          if (!appLoaded) {
+            const loading = document.getElementById('loading');
+            if (loading) {
+              loading.style.opacity = '0';
+              loading.style.transition = 'opacity 0.3s ease';
+              setTimeout(() => loading.remove(), 300);
+            }
           }
-        }, 1000); // Reduced timeout for faster loading
+        }, 3000); // 3 second timeout
+      });
+      
+      // Listen for app ready signal
+      window.addEventListener('app-ready', () => {
+        appLoaded = true;
+        clearTimeout(loadTimeout);
+        
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.opacity = '0';
+          loading.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => loading.remove(), 300);
+        }
       });
       
       // Additional error handling for React app
@@ -140,6 +179,21 @@
             </div>
           `;
         }
+      });
+      
+      // Handle network status changes
+      window.addEventListener('online', () => {
+        console.log('Network is online');
+        // Trigger app reload if it was previously offline
+        if (sessionStorage.getItem('wasOffline') === 'true') {
+          sessionStorage.removeItem('wasOffline');
+          location.reload();
+        }
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('Network is offline');
+        sessionStorage.setItem('wasOffline', 'true');
       });
     </script>
     

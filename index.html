@@ -6,15 +6,15 @@
     <meta name="theme-color" content="#0f172a" />
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="./android-chrome-512x512.png" />
     
     <!-- Performance optimizations -->
     <meta name="description" content="Mobile-first, offline-first PWA to manage prompt cards" />
@@ -42,14 +42,25 @@
     
     <!-- Service Worker registration -->
     <script>
-      // Register service worker immediately for faster caching
+      // Register service worker with better error handling
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js', {
-            scope: '/',
+          navigator.serviceWorker.register('./sw.js', {
+            scope: './',
             updateViaCache: 'none'
           }).then(registration => {
             console.log('SW registered: ', registration);
+            
+            // Handle service worker updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New service worker available
+                  console.log('New service worker available');
+                }
+              });
+            });
           }).catch(registrationError => {
             console.log('SW registration failed: ', registrationError);
           });
@@ -64,6 +75,21 @@
             console.log('Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
             console.log('DOM content loaded:', perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart, 'ms');
           }
+        }
+      });
+      
+      // Error handling for app loading
+      window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.innerHTML = `
+            <div style="color: white; font-family: system-ui; text-align: center;">
+              <div style="margin-bottom: 16px;">⚠️</div>
+              <div>Something went wrong</div>
+              <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #60a5fa; border: none; border-radius: 4px; color: white; cursor: pointer;">Reload</button>
+            </div>
+          `;
         }
       });
     </script>
@@ -98,10 +124,25 @@
             loading.style.transition = 'opacity 0.3s ease';
             setTimeout(() => loading.remove(), 300);
           }
-        }, 100);
+        }, 1000); // Reduced timeout for faster loading
+      });
+      
+      // Additional error handling for React app
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled promise rejection:', event.reason);
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.innerHTML = `
+            <div style="color: white; font-family: system-ui; text-align: center;">
+              <div style="margin-bottom: 16px;">⚠️</div>
+              <div>Failed to load app</div>
+              <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #60a5fa; border: none; border-radius: 4px; color: white; cursor: pointer;">Retry</button>
+            </div>
+          `;
+        }
       });
     </script>
     
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

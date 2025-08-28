@@ -59,12 +59,14 @@ export default function App() {
     loadNotes()
     
     // Use a more efficient update strategy - only update when needed
-    const unsubscribe = db.notes.hook('creating', loadNotes)
-    db.notes.hook('updating', loadNotes)
-    db.notes.hook('deleting', loadNotes)
+    const unsubscribeCreate = db.notes.hook('creating', loadNotes)
+    const unsubscribeUpdate = db.notes.hook('updating', loadNotes)
+    const unsubscribeDelete = db.notes.hook('deleting', loadNotes)
     
     return () => {
-      unsubscribe()
+      unsubscribeCreate()
+      unsubscribeUpdate()
+      unsubscribeDelete()
     }
   }, [])
 
@@ -178,9 +180,19 @@ export default function App() {
   }
 
   async function deleteNote(n: Note) {
-    await db.notes.put({ ...n, deleted: true, dirty: true, updated_at: new Date().toISOString() })
-    await queueMutation({ type: 'delete', noteId: n.id, ts: Date.now() })
-    await flushQueue()
+    try {
+      const updatedNote = { ...n, deleted: true, dirty: true, updated_at: new Date().toISOString() }
+      await db.notes.put(updatedNote)
+      await queueMutation({ type: 'delete', noteId: n.id, ts: Date.now() })
+      
+      // Update the local state immediately for better UX
+      setNotes(prevNotes => prevNotes.filter(note => note.id !== n.id))
+      
+      // Don't force flush immediately - let it sync naturally
+      // await flushQueue()
+    } catch (error) {
+      console.error('Error deleting note:', error)
+    }
   }
 
   async function copyBody(n: Note) {
@@ -283,6 +295,12 @@ export default function App() {
           <div className="spinner mb-4"></div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Loading App</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">Getting your notes ready...</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+          >
+            Reload if stuck
+          </button>
         </div>
       </div>
     )

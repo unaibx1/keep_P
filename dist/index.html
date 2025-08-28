@@ -6,15 +6,15 @@
     <meta name="theme-color" content="#0f172a" />
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="./android-chrome-512x512.png" />
     
     <!-- Performance optimizations -->
     <meta name="description" content="Mobile-first, offline-first PWA to manage prompt cards" />
@@ -29,26 +29,37 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="data:application/octet-stream;base64,aW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JwppbXBvcnQgUmVhY3RET00gZnJvbSAncmVhY3QtZG9tL2NsaWVudCcKaW1wb3J0IEFwcCBmcm9tICcuL0FwcCcKaW1wb3J0ICcuL3N0eWxlcy5jc3MnCgovLyBQZXJmb3JtYW5jZSBtb25pdG9yaW5nCmNvbnN0IHN0YXJ0VGltZSA9IHBlcmZvcm1hbmNlLm5vdygpOwoKLy8gUHJlbG9hZCBjcml0aWNhbCByZXNvdXJjZXMKY29uc3QgcHJlbG9hZENyaXRpY2FsUmVzb3VyY2VzID0gKCkgPT4gewogIGNvbnN0IGNyaXRpY2FsUmVzb3VyY2VzID0gWwogICAgJy9zcmMvQXBwLnRzeCcsCiAgICAnL3NyYy9zdHlsZXMuY3NzJywKICAgICcvbWFuaWZlc3Qud2VibWFuaWZlc3QnCiAgXTsKCiAgY3JpdGljYWxSZXNvdXJjZXMuZm9yRWFjaChyZXNvdXJjZSA9PiB7CiAgICBjb25zdCBsaW5rID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnbGluaycpOwogICAgbGluay5yZWwgPSAncHJlbG9hZCc7CiAgICBsaW5rLmFzID0gcmVzb3VyY2UuZW5kc1dpdGgoJy5jc3MnKSA/ICdzdHlsZScgOiAnc2NyaXB0JzsKICAgIGxpbmsuaHJlZiA9IHJlc291cmNlOwogICAgZG9jdW1lbnQuaGVhZC5hcHBlbmRDaGlsZChsaW5rKTsKICB9KTsKfTsKCi8vIEVuaGFuY2VkIHNlcnZpY2Ugd29ya2VyIHJlZ2lzdHJhdGlvbiB3aXRoIGJldHRlciBlcnJvciBoYW5kbGluZwpjb25zdCByZWdpc3RlclNlcnZpY2VXb3JrZXIgPSBhc3luYyAoKSA9PiB7CiAgaWYgKCdzZXJ2aWNlV29ya2VyJyBpbiBuYXZpZ2F0b3IpIHsKICAgIHRyeSB7CiAgICAgIGNvbnN0IHJlZ2lzdHJhdGlvbiA9IGF3YWl0IG5hdmlnYXRvci5zZXJ2aWNlV29ya2VyLnJlZ2lzdGVyKCcvc3cuanMnLCB7CiAgICAgICAgc2NvcGU6ICcvJywKICAgICAgICB1cGRhdGVWaWFDYWNoZTogJ25vbmUnIC8vIEFsd2F5cyBjaGVjayBmb3IgdXBkYXRlcwogICAgICB9KTsKCiAgICAgIGNvbnNvbGUubG9nKCdTZXJ2aWNlIFdvcmtlciByZWdpc3RlcmVkIHN1Y2Nlc3NmdWxseTonLCByZWdpc3RyYXRpb24pOwoKICAgICAgLy8gTGlzdGVuIGZvciBzZXJ2aWNlIHdvcmtlciB1cGRhdGVzCiAgICAgIHJlZ2lzdHJhdGlvbi5hZGRFdmVudExpc3RlbmVyKCd1cGRhdGVmb3VuZCcsICgpID0+IHsKICAgICAgICBjb25zdCBuZXdXb3JrZXIgPSByZWdpc3RyYXRpb24uaW5zdGFsbGluZzsKICAgICAgICBpZiAobmV3V29ya2VyKSB7CiAgICAgICAgICBuZXdXb3JrZXIuYWRkRXZlbnRMaXN0ZW5lcignc3RhdGVjaGFuZ2UnLCAoKSA9PiB7CiAgICAgICAgICAgIGlmIChuZXdXb3JrZXIuc3RhdGUgPT09ICdpbnN0YWxsZWQnICYmIG5hdmlnYXRvci5zZXJ2aWNlV29ya2VyLmNvbnRyb2xsZXIpIHsKICAgICAgICAgICAgICAvLyBOZXcgc2VydmljZSB3b3JrZXIgYXZhaWxhYmxlCiAgICAgICAgICAgICAgY29uc29sZS5sb2coJ05ldyBzZXJ2aWNlIHdvcmtlciBhdmFpbGFibGUnKTsKICAgICAgICAgICAgICAvLyBZb3UgY2FuIHNob3cgYSBub3RpZmljYXRpb24gdG8gdGhlIHVzZXIgaGVyZQogICAgICAgICAgICB9CiAgICAgICAgICB9KTsKICAgICAgICB9CiAgICAgIH0pOwoKICAgICAgLy8gTGlzdGVuIGZvciBzeW5jIGV2ZW50cyBmcm9tIFNXCiAgICAgIG5hdmlnYXRvci5zZXJ2aWNlV29ya2VyLmFkZEV2ZW50TGlzdGVuZXIoJ21lc3NhZ2UnLCAoZXZlbnQpID0+IHsKICAgICAgICBpZiAoZXZlbnQuZGF0YT8udHlwZSA9PT0gJ1NZTkNfUEVORElORycpIHsKICAgICAgICAgIHdpbmRvdy5kaXNwYXRjaEV2ZW50KG5ldyBFdmVudCgnYXBwLXN5bmMtcGVuZGluZycpKTsKICAgICAgICB9CiAgICAgICAgaWYgKGV2ZW50LmRhdGE/LnR5cGUgPT09ICdPTkxJTkVfU1RBVFVTJykgewogICAgICAgICAgd2luZG93LmRpc3BhdGNoRXZlbnQobmV3IEN1c3RvbUV2ZW50KCdvbmxpbmUtc3RhdHVzLWNoYW5nZScsIHsgCiAgICAgICAgICAgIGRldGFpbDogeyBvbmxpbmU6IGV2ZW50LmRhdGEub25saW5lIH0gCiAgICAgICAgICB9KSk7CiAgICAgICAgfQogICAgICB9KTsKCiAgICAgIC8vIEhhbmRsZSBzZXJ2aWNlIHdvcmtlciBlcnJvcnMKICAgICAgcmVnaXN0cmF0aW9uLmFkZEV2ZW50TGlzdGVuZXIoJ2Vycm9yJywgKGVycm9yKSA9PiB7CiAgICAgICAgY29uc29sZS5lcnJvcignU2VydmljZSBXb3JrZXIgcmVnaXN0cmF0aW9uIGZhaWxlZDonLCBlcnJvcik7CiAgICAgIH0pOwoKICAgICAgcmV0dXJuIHJlZ2lzdHJhdGlvbjsKICAgIH0gY2F0Y2ggKGVycm9yKSB7CiAgICAgIGNvbnNvbGUuZXJyb3IoJ1NlcnZpY2UgV29ya2VyIHJlZ2lzdHJhdGlvbiBmYWlsZWQ6JywgZXJyb3IpOwogICAgfQogIH0KfTsKCi8vIEluaXRpYWxpemUgYXBwIHdpdGggcGVyZm9ybWFuY2Ugb3B0aW1pemF0aW9ucwpjb25zdCBpbml0aWFsaXplQXBwID0gYXN5bmMgKCkgPT4gewogIC8vIFByZWxvYWQgY3JpdGljYWwgcmVzb3VyY2VzCiAgcHJlbG9hZENyaXRpY2FsUmVzb3VyY2VzKCk7CgogIC8vIFJlZ2lzdGVyIHNlcnZpY2Ugd29ya2VyCiAgYXdhaXQgcmVnaXN0ZXJTZXJ2aWNlV29ya2VyKCk7CgogIC8vIE1lYXN1cmUgYXBwIGluaXRpYWxpemF0aW9uIHRpbWUKICBjb25zdCBpbml0VGltZSA9IHBlcmZvcm1hbmNlLm5vdygpIC0gc3RhcnRUaW1lOwogIGNvbnNvbGUubG9nKGBBcHAgaW5pdGlhbGl6ZWQgaW4gJHtpbml0VGltZS50b0ZpeGVkKDIpfW1zYCk7CgogIC8vIFJlbmRlciB0aGUgYXBwCiAgUmVhY3RET00uY3JlYXRlUm9vdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncm9vdCcpISkucmVuZGVyKAogICAgPFJlYWN0LlN0cmljdE1vZGU+CiAgICAgIDxBcHAgLz4KICAgIDwvUmVhY3QuU3RyaWN0TW9kZT4sCiAgKTsKfTsKCi8vIFN0YXJ0IHRoZSBhcHAKaW5pdGlhbGl6ZUFwcCgpLmNhdGNoKGNvbnNvbGUuZXJyb3IpOwoKLy8gUGVyZm9ybWFuY2UgbW9uaXRvcmluZwp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignbG9hZCcsICgpID0+IHsKICBjb25zdCBsb2FkVGltZSA9IHBlcmZvcm1hbmNlLm5vdygpIC0gc3RhcnRUaW1lOwogIGNvbnNvbGUubG9nKGBBcHAgZnVsbHkgbG9hZGVkIGluICR7bG9hZFRpbWUudG9GaXhlZCgyKX1tc2ApOwogIAogIC8vIFJlcG9ydCB0byBhbmFseXRpY3MgaWYgYXZhaWxhYmxlCiAgaWYgKCdndGFnJyBpbiB3aW5kb3cpIHsKICAgICh3aW5kb3cgYXMgYW55KS5ndGFnKCdldmVudCcsICd0aW1pbmdfY29tcGxldGUnLCB7CiAgICAgIG5hbWU6ICdhcHBfbG9hZCcsCiAgICAgIHZhbHVlOiBNYXRoLnJvdW5kKGxvYWRUaW1lKQogICAgfSk7CiAgfQp9KTsK" as="script" type="module" />
-    <link rel="preload" href="/assets/App-zZOnBjVn.tsx" as="script" type="module" />
+    <link rel="preload" href="data:application/octet-stream;base64,aW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JwppbXBvcnQgUmVhY3RET00gZnJvbSAncmVhY3QtZG9tL2NsaWVudCcKaW1wb3J0IEFwcCBmcm9tICcuL0FwcC50c3gnCmltcG9ydCAnLi9zdHlsZXMuY3NzJwppbXBvcnQgeyBFcnJvckJvdW5kYXJ5IH0gZnJvbSAnLi9jb21wb25lbnRzL0Vycm9yQm91bmRhcnknCgovLyBFcnJvciBoYW5kbGluZyBmb3IgUmVhY3QgcmVuZGVyaW5nCmNvbnN0IGhhbmRsZUVycm9yID0gKGVycm9yOiBFcnJvciwgZXJyb3JJbmZvOiBhbnkpID0+IHsKICBjb25zb2xlLmVycm9yKCdSZWFjdCBlcnJvcjonLCBlcnJvciwgZXJyb3JJbmZvKTsKICAKICAvLyBIaWRlIGxvYWRpbmcgaW5kaWNhdG9yIGlmIGl0IGV4aXN0cwogIGNvbnN0IGxvYWRpbmcgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbG9hZGluZycpOwogIGlmIChsb2FkaW5nKSB7CiAgICBsb2FkaW5nLnN0eWxlLm9wYWNpdHkgPSAnMCc7CiAgICBsb2FkaW5nLnN0eWxlLnRyYW5zaXRpb24gPSAnb3BhY2l0eSAwLjNzIGVhc2UnOwogICAgc2V0VGltZW91dCgoKSA9PiBsb2FkaW5nLnJlbW92ZSgpLCAzMDApOwogIH0KfTsKCi8vIEdsb2JhbCBlcnJvciBoYW5kbGVyCndpbmRvdy5hZGRFdmVudExpc3RlbmVyKCdlcnJvcicsIChldmVudCkgPT4gewogIGNvbnNvbGUuZXJyb3IoJ0dsb2JhbCBlcnJvcjonLCBldmVudC5lcnJvcik7CiAgaGFuZGxlRXJyb3IoZXZlbnQuZXJyb3IsIHt9KTsKfSk7CgovLyBVbmhhbmRsZWQgcHJvbWlzZSByZWplY3Rpb24gaGFuZGxlcgp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigndW5oYW5kbGVkcmVqZWN0aW9uJywgKGV2ZW50KSA9PiB7CiAgY29uc29sZS5lcnJvcignVW5oYW5kbGVkIHByb21pc2UgcmVqZWN0aW9uOicsIGV2ZW50LnJlYXNvbik7CiAgaGFuZGxlRXJyb3IobmV3IEVycm9yKGV2ZW50LnJlYXNvbiksIHt9KTsKfSk7CgpSZWFjdERPTS5jcmVhdGVSb290KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyb290JykhKS5yZW5kZXIoCiAgPFJlYWN0LlN0cmljdE1vZGU+CiAgICA8RXJyb3JCb3VuZGFyeT4KICAgICAgPEFwcCAvPgogICAgPC9FcnJvckJvdW5kYXJ5PgogIDwvUmVhY3QuU3RyaWN0TW9kZT4sCikK" as="script" type="module" />
+    <link rel="preload" href="./assets/App-G9W1uoB7.tsx" as="script" type="module" />
     
     <!-- Preload critical images -->
-    <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
-    <link rel="preload" href="/icons/icon-192.png" as="image" type="image/png" />
+    <link rel="preload" href="./favicon.ico" as="image" type="image/x-icon" />
+    <link rel="preload" href="./icons/icon-192.png" as="image" type="image/png" />
     
     <!-- Resource hints for faster loading -->
-    <link rel="prefetch" href="/manifest.webmanifest" />
+    <link rel="prefetch" href="./manifest.webmanifest" />
     
     <!-- Service Worker registration -->
     <script>
-      // Register service worker immediately for faster caching
+      // Register service worker with better error handling
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js', {
-            scope: '/',
+          navigator.serviceWorker.register('./sw.js', {
+            scope: './',
             updateViaCache: 'none'
           }).then(registration => {
             console.log('SW registered: ', registration);
+            
+            // Handle service worker updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New service worker available
+                  console.log('New service worker available');
+                }
+              });
+            });
           }).catch(registrationError => {
             console.log('SW registration failed: ', registrationError);
           });
@@ -65,11 +76,28 @@
           }
         }
       });
+      
+      // Error handling for app loading
+      window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.innerHTML = `
+            <div style="color: white; font-family: system-ui; text-align: center;">
+              <div style="margin-bottom: 16px;">⚠️</div>
+              <div>Something went wrong</div>
+              <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #60a5fa; border: none; border-radius: 4px; color: white; cursor: pointer;">Reload</button>
+            </div>
+          `;
+        }
+      });
     </script>
     
     <title>PWA Prompt Manager</title>
-    <script type="module" crossorigin src="/assets/index-BOCtiWr6.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-d5qkUAYg.css">
+    <script type="module" crossorigin src="./assets/index-BRLq1gpH.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-Y7T1HomI.js">
+    <link rel="modulepreload" crossorigin href="./assets/supabase--Wr4cAHq.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-Bx06yi5D.css">
   </head>
   <body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
     <!-- Loading indicator -->
@@ -99,7 +127,22 @@
             loading.style.transition = 'opacity 0.3s ease';
             setTimeout(() => loading.remove(), 300);
           }
-        }, 100);
+        }, 1000); // Reduced timeout for faster loading
+      });
+      
+      // Additional error handling for React app
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled promise rejection:', event.reason);
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.innerHTML = `
+            <div style="color: white; font-family: system-ui; text-align: center;">
+              <div style="margin-bottom: 16px;">⚠️</div>
+              <div>Failed to load app</div>
+              <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #60a5fa; border: none; border-radius: 4px; color: white; cursor: pointer;">Retry</button>
+            </div>
+          `;
+        }
       });
     </script>
     

@@ -2,7 +2,7 @@
 // Note: This file lives in /public so Vite copies it as-is.
 /* eslint-disable no-undef */
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAMES = {
   SHELL: `app-shell-${CACHE_VERSION}`,
   STATIC: `static-resources-${CACHE_VERSION}`,
@@ -13,21 +13,19 @@ const CACHE_NAMES = {
 
 // Critical app shell assets that should be cached immediately
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/favicon.ico',
-  '/favicon-16x16.png',
-  '/favicon-32x32.png'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './favicon.ico',
+  './favicon-16x16.png',
+  './favicon-32x32.png'
 ];
 
-// Assets to preload for faster loading
+// Remove references to development files that don't exist in production
 const PRELOAD_ASSETS = [
-  '/src/main.tsx',
-  '/src/App.tsx',
-  '/src/styles.css'
+  // These will be handled by Vite's build process
 ];
 
 self.addEventListener('message', (event) => {
@@ -48,11 +46,6 @@ self.addEventListener('install', (event) => {
       caches.open(CACHE_NAMES.SHELL).then(cache => {
         console.log('Caching shell assets...');
         return cache.addAll(SHELL_ASSETS);
-      }),
-      // Preload critical assets
-      caches.open(CACHE_NAMES.STATIC).then(cache => {
-        console.log('Preloading critical assets...');
-        return cache.addAll(PRELOAD_ASSETS);
       })
     ]).then(() => {
       console.log('Service Worker installed successfully');
@@ -135,7 +128,7 @@ async function handleNavigation(request) {
   } catch (error) {
     // If network fails, return offline page
     console.log('Navigation failed, serving offline page');
-    return caches.match('/');
+    return caches.match('./index.html');
   }
 }
 
@@ -171,6 +164,9 @@ async function handleStaticResource(request) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
+  }).catch(() => {
+    // If network fails, return cached version if available
+    return cachedResponse || new Response('', { status: 404 });
   });
 
   return cachedResponse || fetchPromise;
@@ -186,12 +182,9 @@ async function handleAPI(request) {
     }
     return networkResponse;
   } catch (error) {
-    // Fallback to cache
+    // Try cache as fallback
     const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    throw error;
+    return cachedResponse || new Response('', { status: 503 });
   }
 }
 
@@ -200,10 +193,6 @@ async function handleDefault(request) {
   const cache = await caches.open(CACHE_NAMES.STATIC);
   const cachedResponse = await cache.match(request);
   
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
@@ -211,69 +200,12 @@ async function handleDefault(request) {
     }
     return networkResponse;
   } catch (error) {
-    throw error;
+    return cachedResponse || new Response('', { status: 404 });
   }
 }
 
-// Background sync for offline data
-self.addEventListener('sync', async (event) => {
-  if (event.tag === 'sync-notes') {
-    console.log('Background sync triggered');
-    event.waitUntil(syncNotes());
-  }
-});
-
-// Handle online/offline events
-self.addEventListener('online', async () => {
-  console.log('App is back online');
-  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-  clients.forEach(client => {
-    client.postMessage({ type: 'ONLINE_STATUS', online: true });
-  });
-});
-
-self.addEventListener('offline', async () => {
-  console.log('App went offline');
-  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-  clients.forEach(client => {
-    client.postMessage({ type: 'ONLINE_STATUS', online: false });
-  });
-});
-
-// Background sync function
-async function syncNotes() {
-  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-  clients.forEach(client => {
-    client.postMessage({ type: 'SYNC_PENDING' });
-  });
-}
-
-// Cache URLs function for dynamic caching
+// Helper function to cache URLs
 async function cacheUrls(urls) {
   const cache = await caches.open(CACHE_NAMES.STATIC);
-  const promises = urls.map(url => cache.add(url).catch(err => console.log('Failed to cache:', url, err)));
-  return Promise.all(promises);
-}
-
-// Workbox runtime for additional features
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.1.0/workbox-sw.js');
-
-if (self.workbox) {
-  const { registerRoute, setDefaultHandler, setCatchHandler } = workbox.routing;
-  const { NetworkFirst, StaleWhileRevalidate, CacheFirst } = workbox.strategies;
-  const { ExpirationPlugin } = workbox.expiration;
-
-  // Set default handler for unmatched routes
-  setDefaultHandler(new NetworkFirst({
-    cacheName: 'default',
-    networkTimeoutSeconds: 3,
-  }));
-
-  // Catch handler for offline fallback
-  setCatchHandler(({ request }) => {
-    if (request.mode === 'navigate') {
-      return caches.match('/');
-    }
-    return new Response('', { status: 404 });
-  });
+  return Promise.all(urls.map(url => cache.add(url)));
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { db, Note } from '@/lib/db'
-import { ensureSyncRegistered, flushQueue, initSync, newLocalNote, queueMutation, upsertNoteLocal } from '@/lib/sync'
+import { ensureSyncRegistered, flushQueue, initSync, newLocalNote, queueMutation, upsertNoteLocal, performSync, getSyncStats } from '@/lib/sync'
 import { NoteCard } from '@/components/NoteCard'
 import { NoteEditor } from '@/components/NoteEditor'
 import { AuthPage } from '@/components/AuthPage'
@@ -58,15 +58,20 @@ export default function App() {
     
     loadNotes()
     
-    // Use a more efficient update strategy - only update when needed
-    const unsubscribeCreate = db.notes.hook('creating', loadNotes)
-    const unsubscribeUpdate = db.notes.hook('updating', loadNotes)
-    const unsubscribeDelete = db.notes.hook('deleting', loadNotes)
+    // Listen for real-time updates from other devices
+    const handleNotesUpdated = () => {
+      console.log('Notes updated from real-time sync, reloading...')
+      loadNotes()
+    }
+    
+    window.addEventListener('notes-updated', handleNotesUpdated)
+    
+    // Set up periodic refresh for local changes
+    const refreshInterval = setInterval(loadNotes, 2000) // Refresh every 2 seconds
     
     return () => {
-      unsubscribeCreate()
-      unsubscribeUpdate()
-      unsubscribeDelete()
+      window.removeEventListener('notes-updated', handleNotesUpdated)
+      clearInterval(refreshInterval)
     }
   }, [])
 
@@ -88,6 +93,18 @@ export default function App() {
             initSync().catch(console.error)
             ensureSyncRegistered()
           })
+          
+          // Set up periodic sync every 30 seconds for reliability
+          const periodicSync = setInterval(async () => {
+            if (navigator.onLine) {
+              const stats = await getSyncStats()
+              if (!stats.isSyncing) {
+                performSync().catch(console.error)
+              }
+            }
+          }, 30000)
+          
+          return () => clearInterval(periodicSync)
         }
       } catch (error) {
         console.error('Error in checkUser:', error)

@@ -10,7 +10,11 @@ const USER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 let isSyncing = false;
 let syncQueue: (() => Promise<void>)[] = [];
 let lastSyncTime = 0;
-const SYNC_COOLDOWN = 30 * 1000; // 30 seconds between syncs
+const SYNC_COOLDOWN = 5 * 1000; // Reduced to 5 seconds for more responsive sync
+
+// Real-time subscription management
+let realtimeSubscription: any = null;
+let isRealtimeEnabled = false;
 
 function isoNow() {
   return new Date().toISOString()
@@ -45,7 +49,7 @@ export async function upsertNoteLocal(note: Note) {
 export async function queueMutation(m: Mutation) {
   await db.mutations.add(m)
   
-  // Trigger sync if not already syncing
+  // Trigger sync immediately for better responsiveness
   if (!isSyncing) {
     scheduleSync();
   }
@@ -66,7 +70,7 @@ function scheduleSync() {
   }
 }
 
-async function performSync() {
+export async function performSync() {
   if (isSyncing) return;
   
   isSyncing = true;
@@ -213,11 +217,118 @@ export async function pullRemote() {
   }
 }
 
+// Real-time subscription setup
+export async function setupRealtimeSubscription() {
+  const user_id = await getUserId();
+  if (!user_id || isRealtimeEnabled) return;
+
+  try {
+    console.log('Setting up real-time subscription for user:', user_id);
+    
+    realtimeSubscription = supabase
+      .channel('notes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notes',
+          filter: `user_id=eq.${user_id}`
+        },
+        async (payload) => {
+          console.log('Real-time change detected:', payload);
+          
+          // Handle different types of changes
+          if (payload.eventType === 'INSERT') {
+            await handleRemoteInsert(payload.new);
+          } else if (payload.eventType === 'UPDATE') {
+            await handleRemoteUpdate(payload.new);
+          } else if (payload.eventType === 'DELETE') {
+            await handleRemoteDelete(payload.old);
+          }
+          
+          // Trigger UI update
+          window.dispatchEvent(new CustomEvent('notes-updated'));
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+        isRealtimeEnabled = status === 'SUBSCRIBED';
+      });
+
+  } catch (error) {
+    console.error('Failed to setup real-time subscription:', error);
+  }
+}
+
+// Handle remote insert
+async function handleRemoteInsert(newNote: any) {
+  const existing = await db.notes.where('remote_id').equals(newNote.id).first();
+  if (!existing) {
+    const note: Note = {
+      id: crypto.randomUUID(),
+      remote_id: newNote.id,
+      title: newNote.title ?? '',
+      body: newNote.body ?? '',
+      created_at: newNote.created_at ?? new Date().toISOString(),
+      updated_at: newNote.updated_at ?? new Date().toISOString(),
+      user_id: newNote.user_id,
+      dirty: false,
+      deleted: false
+    };
+    await db.updateNote(note);
+  }
+}
+
+// Handle remote update
+async function handleRemoteUpdate(updatedNote: any) {
+  const existing = await db.notes.where('remote_id').equals(updatedNote.id).first();
+  if (existing) {
+    // Only update if remote is newer
+    if (existing.updated_at < updatedNote.updated_at) {
+      const note: Note = {
+        ...existing,
+        title: updatedNote.title ?? existing.title,
+        body: updatedNote.body ?? existing.body,
+        updated_at: updatedNote.updated_at ?? existing.updated_at,
+        dirty: false
+      };
+      await db.updateNote(note);
+    }
+  }
+}
+
+// Handle remote delete
+async function handleRemoteDelete(deletedNote: any) {
+  const existing = await db.notes.where('remote_id').equals(deletedNote.id).first();
+  if (existing) {
+    const note: Note = {
+      ...existing,
+      deleted: true,
+      dirty: false
+    };
+    await db.updateNote(note);
+  }
+}
+
+// Cleanup real-time subscription
+export function cleanupRealtimeSubscription() {
+  if (realtimeSubscription) {
+    supabase.removeChannel(realtimeSubscription);
+    realtimeSubscription = null;
+    isRealtimeEnabled = false;
+    console.log('Real-time subscription cleaned up');
+  }
+}
+
 export async function initSync() {
   // Initialize database first
   await initializeDatabase();
   
-  // Run on app load and when SW nudges us
+  // Setup real-time subscription
+  await setupRealtimeSubscription();
+  
+  // Run initial sync
   await performSync();
 }
 
@@ -257,6 +368,9 @@ window.addEventListener('online', () => {
     syncQueue.push(performSync);
   }
   
+  // Re-setup real-time subscription
+  setupRealtimeSubscription();
+  
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
     navigator.serviceWorker.ready.then(reg => reg.sync.register('sync-notes')).catch(() => {})
   }
@@ -269,6 +383,9 @@ window.addEventListener('online-status-change', (event: CustomEvent) => {
   
   if (online && !isSyncing) {
     performSync();
+    setupRealtimeSubscription();
+  } else if (!online) {
+    cleanupRealtimeSubscription();
   }
 });
 
@@ -300,7 +417,8 @@ export async function getSyncStats() {
     isSyncing,
     syncQueueLength: syncQueue.length,
     lastSyncTime,
-    userIdCached: !!userIdCache
+    userIdCached: !!userIdCache,
+    realtimeEnabled: isRealtimeEnabled
   };
 }
 
@@ -311,3 +429,8 @@ export function clearAllCaches() {
   userIdCacheTime = 0;
   console.log('All caches cleared');
 }
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  cleanupRealtimeSubscription();
+});
